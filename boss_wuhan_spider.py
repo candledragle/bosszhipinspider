@@ -6,6 +6,7 @@
 
 import requests
 import json
+import traceback
 
 from queue import Queue
 from threading import Thread
@@ -52,14 +53,17 @@ def parse_data():
     :brief 从html文本中提取指定信息
     :return: None
     """
-    # # 解析为HTML文档
-    try:
-        while True:
-            # 等待25s，超时则抛出异常
-            detail_url = url_queue.get(timeout=25)
+    print("parse_data +++++++++++++++")
+    # # 解析为HTML文档=
 
-            html = send_request(detail_url, headers, param=None)
-            html_obj = etree.HTML(html)
+    try:
+        print(" true  ============== true")
+        # 等待25s，超时则抛出异常
+        detail_url = url_queue.get(timeout=25)
+
+        html = send_request(detail_url, headers, param=None)
+        html_obj = etree.HTML(html)
+        if html_obj:
             item = {}
 
             # 发布日期
@@ -82,11 +86,11 @@ def parse_data():
             item['responsibility'] = html_obj.xpath("//div[@class='job-sec']//div[@class='text']/text()")[0].strip()
             # 招聘要求
             item['requirement'] = html_obj.xpath("//div[@class='job-banner']//div[@class='info-primary']//p/text()")[0]
-            print(item)
+            print("ddd      : " + item)
             jobs_queue.put(item)  # 添加到队列中
-            time.sleep(15)
-    except:
-        pass
+        time.sleep(1500)
+    except Exception as e:
+        traceback.print_exc()
 
 
 def detail_url(param):
@@ -114,7 +118,8 @@ def write_data(page):
     :param page: 页面数
     :return: None
     """
-    with open('D:/wuhan_python_job_{}.json'.format(page), 'w', encoding='utf-8') as f:
+    with open('/home/sym/Documents/github/python-spider/wuhan_python_job_{}.json'.format(page), 'w',
+              encoding='utf-8') as f:
         f.write('[')
         try:
             while True:
